@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Algeplano App</title>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Algeplano">
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Calculadora%20Algeplano%22%2C%22short_name%22%3A%22Algeplano%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%7D">
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 15px;
+      min-height: 100vh;
+    }
+    h1 { margin: 5px 0 10px 0; font-size: 24px; color: #38bdf8; text-align: center; }
+    #btn-install {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 15px;
+      display: none;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    .calc-panel {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 15px;
+      border: 1px solid #334155;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .system-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+    }
+    input, select {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background-color: #0f172a;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+    button.btn-calc {
+      padding: 10px 20px;
+      background-color: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+      max-width: 300px;
+    }
+    .result-display {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: #4ade80;
+      border: 1px solid #22c55e;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+    .steps-box {
+      text-align: left;
+      font-weight: normal;
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-top: 8px;
+      background: #1e293b;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    #algebra-frame {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      grid-template-rows: 80px 1fr;
+      gap: 8px;
+      width: 100%;
+      max-width: 900px;
+      background-color: #1e293b;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      border: 1px solid #334155;
+    }
+    .corner {
+      background-color: #334155;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #94a3b8;
+    }
+    .axis {
+      background-color: #0f172a;
+      border: 2px dashed #475569;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    #axis-top { grid-column: 2; grid-row: 1; }
+    #axis-left { grid-column: 1; grid-row: 2; min-height: 320px; }
+    #board { grid-column: 2; grid-row: 2; background-color: #0f172a; border: 2px solid #334155; border-radius: 8px; position: relative; min-height: 320px; overflow: hidden; }
+    .tile {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .tile-x2 { width: 65px; height: 65px; background-color: #2563eb; font-size: 15px; }
+    .tile-x-vert { width: 65px; height: 22px; background-color: #16a34a; font-size: 13px; }
+    .tile-x-horiz { width: 22px; height: 65px; background-color: #16a34a; font-size: 13px; }
+    .tile-y-vert { width: 65px; height: 22px; background-color: #a855f7; font-size: 13px; }
+    .tile-1 { width: 22px; height: 22px; background-color: #ea580c; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <h1>Calculadora Algeplano App</h1>
+  <button id="btn-install" onclick="installApp()">📲 Instalar App en Google Chrome</button>
+
+  <div class="calc-panel">
+    <div class="input-group">
+      <select id="op-type" onchange="toggleInputs()">
+        <option value="mult">Multiplicar: (a) × (b)</option>
+        <option value="fact">Factorizar: Polinomio</option>
+        <option value="div">Dividir: (Dividendo) ÷ (Divisor)</option>
+        <option value="sum">Sumar: (A) + (B)</option>
+        <option value="rest">Restar: (A) - (B)</option>
+        <option value="eq">Ecuación Lineal: Ax + B = Cx + D</option>
+        <option value="sys2">Sistema 2x2: Ax + By = C | Dx + Ey = F</option>
+      </select>
+    </div>
+
+    <!-- Modos de Entrada -->
+    <div id="input-mult" class="input-group">
+      <input type="text" id="m-fact1" placeholder="Factor 1 (ej: x+2)" value="x+2">
+      <span>×</span>
+      <input type="text" id="m-fact2" placeholder="Factor 2 (ej: x+1)" value="x+1">
+    </div>
+
+    <div id="input-fact" class="input-group" style="display:none;">
+      <input type="text" id="f-poly" placeholder="Polinomio (ej: x^2+3x+2)" value="x^2+3x+2">
+    </div>
+
+    <div id="input-div" class="input-group" style="display:none;">
+      <input type="text" id="d-num" placeholder="Dividendo (ej: x^2+3x+2)" value="x^2+3x+2">
+      <span>÷</span>
+      <input type="text" id="d-den" placeholder="Divisor (ej: x+1)" value="x+1">
+    </div>
+
+    <div id="input-sum" class="input-group" style="display:none;">
+      <input type="text" id="s-exp1" placeholder="Expresión 1 (ej: 2x+3)" value="2x+3">
+      <span>+</span>
+      <input type="text" id="s-exp2" placeholder="Expresión 2 (ej: x+4)" value="x+4">
+    </div>
+
+    <div id="input-rest" class="input-group" style="display:none;">
+      <input type="text" id="r-exp1" placeholder="Expresión 1 (ej: 3x+5)" value="3x+5">
+      <span>-</span>
+      <input type="text" id="r-exp2" placeholder="Expresión 2 (ej: x+2)" value="x+2">
+    </div>
+
+    <div id="input-eq" class="input-group" style="display:none;">
+      <input type="text" id="eq-lhs" placeholder="Lado Izq. (ej: 3x+2)" value="3x+2">
+      <span>=</span>
+      <input type="text" id="eq-rhs" placeholder="Lado Der. (ej: x+8)" value="x+8">
+    </div>
+
+    <div id="input-sys2" class="input-group system-inputs" style="display:none;">
+      <div>
+        <input type="text" id="sys-eq1" placeholder="Ec. 1 (ej: 2x + y = 7)" value="2x + y = 7">
+      </div>
+      <div>
+        <input type="text" id="sys-eq2" placeholder="Ec. 2 (ej: x - y = 2)" value="x - y = 2">
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <button class="btn-calc" onclick="calculate()">Calcular y Representar</button>
+    </div>
+
+    <div id="result" class="result-display">Resultado: Presiona calcular</div>
+  </div>
+
+  <div id="algebra-frame">
+    <div class="corner" id="corner-symbol">×</div>
+    <div id="axis-top" class="axis"></div>
+    <div id="axis-left" class="axis"></div>
+    <div id="board"></div>
+  </div>
+
+  <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('btn-install').style.display = 'inline-block';
+    });
+
+    function installApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      const swCode = "self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));";
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    }
+
+    function toggleInputs() {
+      const mode = document.getElementById('op-type').value;
+      document.getElementById('input-mult').style.display = mode === 'mult' ? 'flex' : 'none';
+      document.getElementById('input-fact').style.display = mode === 'fact' ? 'flex' : 'none';
+      document.getElementById('input-div').style.display = mode === 'div' ? 'flex' : 'none';
+      document.getElementById('input-sum').style.display = mode === 'sum' ? 'flex' : 'none';
+      document.getElementById('input-rest').style.display = mode === 'rest' ? 'flex' : 'none';
+      document.getElementById('input-eq').style.display = mode === 'eq' ? 'flex' : 'none';
+      document.getElementById('input-sys2').style.display = mode === 'sys2' ? 'flex' : 'none';
+      
+      const symbolMap = { mult: '×', fact: 'F', div: '÷', sum: '+', rest: '-', eq: '=', sys2: '{' };
+      document.getElementById('corner-symbol').innerText = symbolMap[mode] || '×';
+    }
+
+    function parse2VarEq(str) {
+      str = str.replace(/\s+/g, '');
+      let parts = str.split('=');
+      if (parts.length !== 2) return null;
+      let lhs = parts[0], rhs = parseFloat(parts[1]) || 0;
+      
+      let a = 0, b = 0;
+      let xMatch = lhs.match(/([+-]?[0-9]*\.?[0-9]*)x/);
+      if (xMatch) {
+        let val = xMatch[1];
+        if (val === '' || val === '+') a = 1;
+        else if (val === '-') a = -1;
+        else a = parseFloat(val);
+      }
+      let yMatch = lhs.match(/([+-]?[0-9]*\.?[0-9]*)y/);
+      if (yMatch) {
+        let val = yMatch[1];
+        if (val === '' || val === '+') b = 1;
+        else if (val === '-') b = -1;
+        else b = parseFloat(val);
+      }
+      return { a, b, c: rhs };
+    }
+
+    function parseLinear(str) {
+      str = str.replace(/\s+/g, '');
+      let x = 0, c = 0;
+      let xMatch = str.match(/([+-]?[0-9]*)x/);
+      if (xMatch) {
+        let val = xMatch[1];
+        if (val === '' || val === '+') x = 1;
+        else if (val === '-') x = -1;
+        else x = parseInt(val);
+      }
+      let remaining = str.replace(/([+-]?[0-9]*)x/, '');
+      let cMatch = remaining.match(/([+-]?\d+)/);
+      if (cMatch) c = parseInt(cMatch[0]);
+      return { x, c };
+    }
+
+    function parseQuadratic(str) {
+      str = str.replace(/\s+/g, '');
+      let x2 = 0, x = 0, c = 0;
+      let x2Match = str.match(/([0-9]*)x\^2/);
+      if (x2Match) x2 = x2Match[1] === '' ? 1 : parseInt(x2Match[1]);
+      let remaining = str.replace(/([0-9]*)x\^2/, '');
+      let xMatch = remaining.match(/([+-]?[0-9]*)x/);
+      if (xMatch) x = xMatch[1] === '' || xMatch[1] === '+' ? 1 : parseInt(xMatch[1]);
+      let cMatch = remaining.replace(/([+-]?[0-9]*)x/, '').match(/([+-]?\d+)/);
+      if (cMatch) c = parseInt(cMatch[0]);
+      return { x2, x, c };
+    }
+
+    function formatExpr(x2, x, c) {
+      let resText = [];
+      if (x2 > 0) resText.push(x2 === 1 ? 'x²' : `${x2}x²`);
+      if (x > 0) resText.push(x === 1 ? 'x' : `${x}x`);
+      else if (x < 0) resText.push(x === -1 ? '-x' : `${x}x`);
+      if (c !== 0 || resText.length === 0) resText.push(`${c}`);
+      return resText.join(' + ').replace(/\+ -/g, '- ');
+    }
+
+    function clearBoard() {
+      document.getElementById('axis-top').innerHTML = '';
+      document.getElementById('axis-left').innerHTML = '';
+      document.getElementById('board').innerHTML = '';
+    }
+
+    function createTile(type, subType, x, y, containerId) {
+      const container = document.getElementById(containerId);
+      const tile = document.createElement('div');
+      tile.classList.add('tile', `tile-${subType}`);
+      if (type === 'x2') tile.innerHTML = 'x²';
+      else if (type === 'x') tile.innerHTML = 'x';
+      else if (type === 'y') tile.innerHTML = 'y';
+      else tile.innerHTML = '1';
+      tile.style.left = `${x}px`;
+      tile.style.top = `${y}px`;
+      container.appendChild(tile);
+    }
+
+    function renderDirectRepresentation(f, containerId) {
+      let leftOffset = 8, topOffset = 8;
+      for (let i = 0; i < Math.max(0, f.x); i++) {
+        createTile('x', 'x-vert', leftOffset, topOffset, containerId);
+        leftOffset += 70;
+        if (leftOffset > 240) { leftOffset = 8; topOffset += 30; }
+      }
+      for (let i = 0; i < Math.max(0, f.c); i++) {
+        createTile('1', '1', leftOffset, topOffset, containerId);
+        leftOffset += 26;
+        if (leftOffset > 240) { leftOffset = 8; topOffset += 26; }
+      }
+    }
+
+    function calculate() {
+      clearBoard();
+      const mode = document.getElementById('op-type').value;
+      const resDisplay = document.getElementById('result');
+
+      if (mode === 'mult') {
+        let f1 = parseLinear(document.getElementById('m-fact1').value);
+        let f2 = parseLinear(document.getElementById('m-fact2').value);
+        renderLinearAxis(f1, 'axis-top', true);
+        renderLinearAxis(f2, 'axis-left', false);
+        renderGridProduct(f1, f2);
+        let x2 = f1.x * f2.x, x = f1.x * f2.c + f2.x * f1.c, c = f1.c * f2.c;
+        resDisplay.innerHTML = `Resultado: ${formatExpr(x2, x, c)}`;
+      } 
+      else if (mode === 'fact') {
+        let q = parseQuadratic(document.getElementById('f-poly').value);
+        let a = 0, b = 0, found = false;
+        for (let i = 1; i <= Math.abs(q.c); i++) {
+          if (q.c % i === 0) {
+            let j = q.c / i;
+            if (i + j === q.x) { a = i; b = j; found = true; break; }
+          }
+        }
+        if (found) {
+          let f1 = { x: 1, c: a }, f2 = { x: 1, c: b };
+          renderLinearAxis(f1, 'axis-top', true);
+          renderLinearAxis(f2, 'axis-left', false);
+          renderGridProduct(f1, f2);
+          resDisplay.innerHTML = `Factorización: (x + ${a})(x + ${b})`;
+        } else {
+          resDisplay.innerHTML = `No se pudo factorizar en enteros simples.`;
+        }
+      }
+      else if (mode === 'div') {
+        let num = parseQuadratic(document.getElementById('d-num').value);
+        let den = parseLinear(document.getElementById('d-den').value);
+        let cocienteC = num.c / den.c;
+        let f1 = { x: 1, c: cocienteC }, f2 = den;
+        if (num.c % den.c === 0 && (f1.c + f2.c === num.x)) {
+          renderLinearAxis(f1, 'axis-top', true);
+          renderLinearAxis(f2, 'axis-left', false);
+          renderGridProduct(f1, f2);
+          resDisplay.innerHTML = `Cociente: x + ${cocienteC}`;
+        } else {
+          resDisplay.innerHTML = `División no exacta en enteros básicos.`;
+        }
+      }
+      else if (mode === 'sum') {
+        let e1 = parseLinear(document.getElementById('s-exp1').value);
+        let e2 = parseLinear(document.getElementById('s-exp2').value);
+        let total = { x: e1.x + e2.x, c: e1.c + e2.c };
+        renderDirectRepresentation(e1, 'axis-top');
+        renderDirectRepresentation(e2, 'axis-left');
+        renderDirectRepresentation(total, 'board');
+        resDisplay.innerHTML = `Suma: (${formatExpr(0, e1.x, e1.c)}) + (${formatExpr(0, e2.x, e2.c)})<br>= ${formatExpr(0, total.x, total.c)}`;
+      }
+      else if (mode === 'rest') {
+        let e1 = parseLinear(document.getElementById('r-exp1').value);
+        let e2 = parseLinear(document.getElementById('r-exp2').value);
+        let total = { x: e1.x - e2.x, c: e1.c - e2.c };
+        renderDirectRepresentation(e1, 'axis-top');
+        renderDirectRepresentation(e2, 'axis-left');
+        renderDirectRepresentation(total, 'board');
+        resDisplay.innerHTML = `Resta: (${formatExpr(0, e1.x, e1.c)}) - (${formatExpr(0, e2.x, e2.c)})<br>= ${formatExpr(0, total.x, total.c)}`;
+      }
+      else if (mode === 'eq') {
+        let lhs = parseLinear(document.getElementById('eq-lhs').value);
+        let rhs = parseLinear(document.getElementById('eq-rhs').value);
+        
+        renderDirectRepresentation(lhs, 'axis-left');
+        renderDirectRepresentation(rhs, 'axis-top');
+        
+        let diffX = lhs.x - rhs.x;
+        let diffC = rhs.c - lhs.c;
+        
+        if (diffX === 0) {
+          resDisplay.innerHTML = diffC === 0 ? "Infinitas soluciones" : "Sin solución";
+          return;
+        }
+        
+        let xVal = diffC / diffX;
+        renderDirectRepresentation({ x: 1, c: xVal }, 'board');
+        
+        let stepsHtml = `
+          <div class="steps-box">
+            <b>Paso a paso de la resolución:</b><br>
+            1. Ecuación inicial: <code>${formatExpr(0, lhs.x, lhs.c)} = ${formatExpr(0, rhs.x, rhs.c)}</code><br>
+            2. Mover términos con x a la izquierda: <code>${diffX}x + ${lhs.c} = ${rhs.c}</code><br>
+            3. Mover constantes a la derecha: <code>${diffX}x = ${diffC}</code><br>
+            4. Despejar x: <code>x = ${diffC} / ${diffX}</code>
+          </div>
+        `;
+        
+        resDisplay.innerHTML = `Solución: <b>x = ${xVal}</b>` + stepsHtml;
+      }
+      else if (mode === 'sys2') {
+        let eq1 = parse2VarEq(document.getElementById('sys-eq1').value);
+        let eq2 = parse2VarEq(document.getElementById('sys-eq2').value);
+        
+        if (!eq1 || !eq2) {
+          resDisplay.innerHTML = "Error al parsear el sistema. Usa la forma: Ax + By = C";
+          return;
+        }
+        
+        let D = eq1.a * eq2.b - eq1.b * eq2.a;
+        let Dx = eq1.c * eq2.b - eq1.b * eq2.c;
+        let Dy = eq1.a * eq2.c - eq1.c * eq2.a;
+        
+        if (D === 0) {
+          resDisplay.innerHTML = (Dx === 0 && Dy === 0) ? "Sistema compatible indeterminado (infinitas soluciones)" : "Sistema incompatible (sin solución)";
+          return;
+        }
+        
+        let xVal = Dx / D;
+        let yVal = Dy / D;
+        
+        // Visualizar en el tablero los coeficientes
+        renderSystemAxis(eq1, 'axis-top');
+        renderSystemAxis(eq2, 'axis-left');
+        renderSolutionBoard(xVal, yVal);
+        
+        let stepsHtml = `
+          <div class="steps-box">
+            <b>Resolución por Método de Cramer (Determinantes):</b><br>
+            1. Determinante Principal (&Delta;): <code>(${eq1.a} × ${eq2.b}) - (${eq1.b} × ${eq2.a}) = ${D}</code><br>
+            2. Determinante de x (&Delta;x): <code>(${eq1.c} × ${eq2.b}) - (${eq1.b} × ${eq2.c}) = ${Dx}</code><br>
+            3. Determinante de y (&Delta;y): <code>(${eq1.a} × ${eq2.c}) - (${eq1.c} × ${eq2.a}) = ${Dy}</code><br>
+            4. Calculando variables: <code>x = ${Dx} / ${D} = ${xVal}</code>, <code>y = ${Dy} / ${D} = ${yVal}</code>
+          </div>
+        `;
+        
+        resDisplay.innerHTML = `Solución: <b>x = ${xVal}, y = ${yVal}</b>` + stepsHtml;
+      }
+    }
+
+    function renderSystemAxis(eq, axisId) {
+      let offset = 8;
+      for (let i = 0; i < Math.max(0, eq.a); i++) {
+        createTile('x', 'x-vert', offset, 8, axisId);
+        offset += 70;
+      }
+      for (let i = 0; i < Math.max(0, eq.b); i++) {
+        createTile('y', 'y-vert', offset, 8, axisId);
+        offset += 70;
+      }
+      for (let i = 0; i < Math.max(0, eq.c); i++) {
+        createTile('1', '1', offset, 8, axisId);
+        offset += 26;
+      }
+    }
+
+    function renderSolutionBoard(xVal, yVal) {
+      let topOffset = 8;
+      createTile('x', 'x-vert', 8, topOffset, 'board');
+      let textX = document.createElement('span');
+      textX.style.position = 'absolute';
+      textX.style.left = '85px';
+      textX.style.top = `${topOffset + 2}px`;
+      textX.style.color = '#4ade80';
+      textX.style.fontWeight = 'bold';
+      textX.innerText = `= ${xVal}`;
+      document.getElementById('board').appendChild(textX);
+
+      topOffset += 40;
+      createTile('y', 'y-vert', 8, topOffset, 'board');
+      let textY = document.createElement('span');
+      textY.style.position = 'absolute';
+      textY.style.left = '85px';
+      textY.style.top = `${topOffset + 2}px`;
+      textY.style.color = '#4ade80';
+      textY.style.fontWeight = 'bold';
+      textY.innerText = `= ${yVal}`;
+      document.getElementById('board').appendChild(textY);
+    }
+
+    function renderLinearAxis(f, axisId, isHorizontal) {
+      let offset = 8;
+      for (let i = 0; i < f.x; i++) {
+        createTile('x', isHorizontal ? 'x-vert' : 'x-horiz', isHorizontal ? offset : 8, isHorizontal ? 8 : offset, axisId);
+        offset += 70;
+      }
+      for (let i = 0; i < f.c; i++) {
+        createTile('1', '1', isHorizontal ? offset : 8, isHorizontal ? 8 : offset, axisId);
+        offset += 26;
+      }
+    }
+
+    function renderGridProduct(f1, f2) {
+      let topOffset = 8;
+      for (let i = 0; i < f2.x; i++) {
+        let leftOffset = 8;
+        for (let j = 0; j < f1.x; j++) {
+          createTile('x2', 'x2', leftOffset, topOffset, 'board');
+          leftOffset += 70;
+        }
+        for (let j = 0; j < f1.c; j++) {
+          createTile('x', 'x-horiz', leftOffset, topOffset, 'board');
+          leftOffset += 26;
+        }
+        topOffset += 70;
+      }
+      for (let i = 0; i < f2.c; i++) {
+        let leftOffset = 8;
+        for (let j = 0; j < f1.x; j++) {
+          createTile('x', 'x-vert', leftOffset, topOffset, 'board');
+          leftOffset += 70;
+        }
+        for (let j = 0; j < f1.c; j++) {
+          createTile('1', '1', leftOffset, topOffset, 'board');
+          leftOffset += 26;
+        }
+        topOffset += 26;
+      }
+    }
+
+    calculate();
+  </script>
+</body>
+</html>
